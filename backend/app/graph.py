@@ -9,7 +9,9 @@ class AgentState(TypedDict):
     input: str
     output: Optional[str]
     context: Annotated[List[str], operator.add]
-    intermediate_steps: Dict[str, Any]
+    execution_log: Annotated[List[str], operator.add]
+    # Use update/merge for intermediate_steps
+    intermediate_steps: Annotated[Dict[str, Any], lambda x, y: {**x, **y}]
 
 from app.nodes.registry import NodeRegistry
 
@@ -20,8 +22,10 @@ class GraphBuilder:
         self.workflow = StateGraph(AgentState)
 
     def build(self):
+        print(f"[GraphBuilder] Building with {len(self.nodes)} nodes and {len(self.edges)} edges.")
         # 1. Add Nodes
         for node in self.nodes:
+            print(f"[GraphBuilder] Adding node: {node.id} ({node.type})")
             node_id = node.id
             node_type = node.type
             config = node.config
@@ -32,10 +36,22 @@ class GraphBuilder:
 
         # 2. Add Edges
         # Entry point logic
-        entry_node = next((n for n in self.nodes if n.type == 'trigger'), self.nodes[0])
+        # Entry point logic
+        # Priority: chat-trigger -> trigger -> input-channel -> first node
+        entry_node = next((n for n in self.nodes if n.type == 'chat-trigger'), None)
+        if not entry_node:
+            entry_node = next((n for n in self.nodes if n.type == 'trigger'), self.nodes[0])
+        
         self.workflow.set_entry_point(entry_node.id)
 
         for edge in self.edges:
             self.workflow.add_edge(edge.source, edge.target)
+
+        # 3. Handle Leaf Nodes (Dead-Ends)
+        # LangGraph requires flow to end at END. Find nodes with no outgoing edges.
+        edge_sources = set(e.source for e in self.edges)
+        for node in self.nodes:
+            if node.id not in edge_sources:
+                 self.workflow.add_edge(node.id, END)
 
         return self.workflow.compile()

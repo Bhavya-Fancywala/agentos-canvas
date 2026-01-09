@@ -13,6 +13,7 @@ import {
   Circle,
   Sun,
   Moon,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +43,10 @@ export function CanvasHeader() {
     toggleInspector,
     toggleSimulation,
     validationIssues,
-    executeAgent
+    executeAgent,
+    nodes,
+    isChatOpen,
+    toggleChat
   } = useAgentStore();
 
   const [isRunning, setIsRunning] = useState(false);
@@ -174,6 +178,19 @@ export function CanvasHeader() {
             <PanelRight className="h-4 w-4 mr-2" />
             Inspector
           </Button>
+
+          {/* Only show Chat button if 'chat-trigger' node exists */}
+          {nodes.some(n => n.data.type === 'chat-trigger') && (
+            <Button
+              variant={isChatOpen ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-9"
+              onClick={toggleChat}
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Chat
+            </Button>
+          )}
 
           <div className="h-6 w-px bg-border" />
 

@@ -502,10 +502,17 @@ export function NodeConfigModal() {
                                         <SelectItem value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet (June)</SelectItem>
                                         <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
                                         <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash</SelectItem>
+                                        <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash (New)</SelectItem>
+                                        <SelectItem value="gemini-2.0-pro-exp">Gemini 2.0 Pro (Exp)</SelectItem>
+                                        <SelectItem value="gemini-2.5-flash-preview-0417">Gemini 2.5 Flash</SelectItem>
+                                        <SelectItem value="deepseek-chat">DeepSeek V3 (Chat)</SelectItem>
+                                        <SelectItem value="deepseek-reasoner">DeepSeek R1 (Reasoner)</SelectItem>
+                                        <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro</SelectItem>
                                         <SelectItem value="mistral-large-latest">Mistral Large</SelectItem>
                                         <SelectItem value="codestral-latest">Mistral Codestral</SelectItem>
-                                        <SelectItem value="llama-3.1-70b-versatile">Groq Llama 3.1 70B</SelectItem>
+                                        <SelectItem value="llama-3.3-70b-versatile">Groq Llama 3.3 70B</SelectItem>
                                         <SelectItem value="llama-3.1-8b-instant">Groq Llama 3.1 8B</SelectItem>
+                                        <SelectItem value="mixtral-8x7b-32768">Groq Mixtral 8x7b</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

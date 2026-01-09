@@ -74,7 +74,8 @@ async def execute_workflow(request: WorkflowRequest):
         return {
             "status": "success",
             "agent_id": request.agent_id,
-            "output": result.get("output"),
+            "output": result.get("output") or "No Output Generated (Check Logs)",
+            "logs": result.get("execution_log", []),
             "full_state": result
         }
     except Exception as e:

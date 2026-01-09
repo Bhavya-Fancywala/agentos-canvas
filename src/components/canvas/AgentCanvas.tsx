@@ -18,10 +18,12 @@ import { CanvasHeader } from './CanvasHeader';
 import { SimulationOverlay } from './SimulationOverlay';
 import CustomEdge from './CustomEdge';
 import { CustomConnectionLine } from './CustomConnectionLine';
+import { TestChatPanel } from './TestChatPanel';
 
 // New AgentOS Components
 import { NodeConfigModal } from '../agentos/modals/NodeConfigModal';
 import { TriggerNode } from '../agentos/nodes/entry/TriggerNode';
+import { ChatTriggerNode } from '../agentos/nodes/entry/ChatTriggerNode';
 import { InputChannelNode } from '../agentos/nodes/entry/InputChannelNode';
 import { AgentGoalNode } from '../agentos/nodes/processing/AgentGoalNode';
 import { AgentBrainNode } from '../agentos/nodes/processing/AgentBrainNode';
@@ -40,6 +42,7 @@ const nodeTypes: NodeTypes = {
 
   // Entry
   trigger: TriggerNode,
+  'chat-trigger': ChatTriggerNode,
   'input-channel': InputChannelNode,
 
   // Processing
@@ -186,6 +189,7 @@ function AgentCanvasInner() {
       <NodeInspector />
       <NodeConfigModal /> {/* Added Modal */}
       <ValidationPanel />
+      <TestChatPanel />
       {isSimulationMode && <SimulationOverlay />}
     </div>
   );

@@ -24,6 +24,7 @@ interface AgentState {
   isPaletteOpen: boolean;
   isInspectorOpen: boolean;
   isSimulationMode: boolean;
+  isChatOpen: boolean;
 
   // Validation
   validationIssues: ValidationIssue[];
@@ -45,6 +46,7 @@ interface AgentState {
   togglePalette: () => void;
   toggleInspector: () => void;
   toggleSimulation: () => void;
+  toggleChat: () => void;
 
   // Validation
   // Validation
@@ -64,6 +66,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   isPaletteOpen: true,
   isInspectorOpen: true,
   isSimulationMode: false,
+  isChatOpen: false,
   validationIssues: [],
 
   createAgent: (name, description, environment) => {
@@ -170,6 +173,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   togglePalette: () => set((state) => ({ isPaletteOpen: !state.isPaletteOpen })),
   toggleInspector: () => set((state) => ({ isInspectorOpen: !state.isInspectorOpen })),
   toggleSimulation: () => set((state) => ({ isSimulationMode: !state.isSimulationMode })),
+  toggleChat: () => set((state) => ({ isChatOpen: !state.isChatOpen })),
 
   validateAgent: () => {
     // ... existing validation logic ...
@@ -186,8 +190,9 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     const hasEntry = nodeTypes.some(t => t === 'trigger' || t === 'input-channel');
     if (!hasEntry && nodes.length > 0) { issues.push({ id: 'missing-entry', severity: 'warning', message: 'Agent has no Entry Point (Trigger or Input Channel)', category: 'Flow', }); }
     nodes.forEach(node => {
-      const hasConnection = edges.some(e => e.source === node.id || e.target === node.id);
-      if (!hasConnection && nodes.length > 1) { issues.push({ id: `isolated-${node.id}`, nodeId: node.id, severity: 'warning', message: `${node.data.label} is not connected to the agent graph`, category: 'Structure', }); }
+      // Backend now handles isolated nodes by auto-connecting to END. Warning removed.
+      // const hasConnection = edges.some(e => e.source === node.id || e.target === node.id);
+      // if (!hasConnection && nodes.length > 1) { issues.push({ id: `isolated-${node.id}`, nodeId: node.id, severity: 'warning', message: `${node.data.label} is not connected to the agent graph`, category: 'Structure', }); }
     });
     const guardrailNode = nodes.find(n => n.data.type === 'guardrails');
     if (guardrailNode) {

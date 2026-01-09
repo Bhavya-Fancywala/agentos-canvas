@@ -43,7 +43,7 @@ class BrainNode:
                 temperature=self.temperature,
                 max_tokens=self.max_tokens
             )
-        elif "llama" in self.model: # Groq
+        elif "llama" in self.model or "mixtral" in self.model: # Groq
             from langchain_groq import ChatGroq
             return ChatGroq(
                 model_name=self.model,
@@ -60,17 +60,39 @@ class BrainNode:
                  temperature=1, # o1 often fixes temp at 1
                  max_completion_tokens=self.max_tokens # valid for o1
             )
+        elif "deepseek" in self.model:
+            return ChatOpenAI(
+                model=self.model,
+                api_key=self.api_key,
+                base_url="https://api.deepseek.com",
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
+            )
+        elif "deepseek" in self.model:
+            return ChatOpenAI(
+                model=self.model,
+                api_key=self.api_key,
+                base_url="https://api.deepseek.com",
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
+            )
         else:
             # Default fallback
             return ChatOpenAI(api_key=self.api_key)
 
     async def process(self, input_text: str, context: str = "") -> str:
-        llm = self._get_llm()
-        
-        messages = [
-            SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"Context: {context}\n\nUser Input: {input_text}")
-        ]
-        
-        response = await llm.ainvoke(messages)
-        return response.content
+        if not self.api_key:
+            return "Error: Missing API Key. Please click the node to configure it."
+
+        try:
+            llm = self._get_llm()
+            
+            messages = [
+                SystemMessage(content=self.system_prompt),
+                HumanMessage(content=f"Context: {context}\n\nUser Input: {input_text}")
+            ]
+            
+            response = await llm.ainvoke(messages)
+            return response.content
+        except Exception as e:
+            return f"Error executing LLM: {str(e)}"

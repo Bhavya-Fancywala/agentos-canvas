@@ -74,6 +74,14 @@ export const NODE_TYPES: NodeTypeDefinition[] = [
     icon: 'MessageSquare',
     riskLevel: 'low'
   },
+  {
+    type: 'chat-trigger',
+    label: 'On Chat Message',
+    description: 'Triggers workflow when a user sends a message in the Chat UI',
+    category: 'entry',
+    icon: 'MessageSquare',
+    riskLevel: 'low'
+  },
 
   // 2. Core Logic
   {

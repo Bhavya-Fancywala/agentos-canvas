@@ -20,12 +20,9 @@ class NodeRegistry:
         """
         Returns an async callable that takes (state) and returns (update).
         """
-        impl = cls._registry.get(node_type)
-        if not impl:
-            # Fallback no-op runner
-            async def no_op(state):
-                return {}
-            return no_op
+        # Main Registry Logic
+        # We check specific types first, then fall back to decorators if needed
+
 
         # Logic to wrap classes vs functions
         # For this system, we'll assume we register "Runner Factories" or Classes with a standardized .process()
@@ -33,25 +30,45 @@ class NodeRegistry:
         if node_type == "agent-brain":
             node_instance = BrainNode(config)
             async def brain_runner(state):
-                context_str = "\n".join(state.get("context", []))
-                res = await node_instance.process(state.get("input", ""), context=context_str)
-                return {"output": res, "intermediate_steps": {node_type: res}}
+                log_entry = f"[Brain] processing input..."
+                try:
+                    context_str = "\n".join(state.get("context", []))
+                    res = await node_instance.process(state.get("input", ""), context=context_str)
+                    return {
+                        "output": res, 
+                        "intermediate_steps": {node_type: res},
+                        "execution_log": [log_entry, f"[Brain] Generated {len(res)} chars"]
+                    }
+                except Exception as e:
+                    return {
+                        "intermediate_steps": {node_type: f"Error: {e}"},
+                        "execution_log": [log_entry, f"[Brain] Error: {e}"]
+                    }
             return brain_runner
 
-        elif node_type == "memory-config":
-            node_instance = MemoryNode(config)
-            async def memory_runner(state):
-                res = await node_instance.retrieve(state.get("input", ""))
-                return {"context": [res]}
-            return memory_runner
-
-        elif node_type == "trigger":
-            # Triggers often start the workflow, but if they are part of the graph execution
-            # (e.g. chaining triggers), they might just pass data through.
-            async def trigger_runner(state):
-                # If webhook, we might validate payload here
-                return {"intermediate_steps": {"trigger": "Triggered"}}
-            return trigger_runner
+        elif node_type == "chat-trigger":
+            async def chat_runner(state):
+                try:
+                    user_msg = state.get("input", "")
+                    return {
+                        "intermediate_steps": {"chat-trigger": "Received Input"},
+                        "execution_log": [f"[Chat] Triggered with input: {user_msg}"]
+                    }
+                except Exception as e:
+                     return {
+                         "intermediate_steps": {"chat-trigger": f"Error: {e}"},
+                         "execution_log": [f"[Chat] Error: {e}"]
+                     }
+            return chat_runner
+            
+        elif node_type == "agent-goal":
+            async def goal_runner(state):
+                mission = config.get("missionStatement", "")
+                return {
+                    "context": [f"Mission: {mission}"],
+                    "execution_log": [f"[Goal] Injected Mission: {mission}"]
+                }
+            return goal_runner
 
         elif node_type == "tool-definition":
             # Registers a tool in the context for the Brain to use
@@ -167,7 +184,46 @@ class NodeRegistry:
                  return {"intermediate_steps": {"human": "Waiting for Approval"}}
              return human_runner
 
+        elif node_type == "agent-goal":
+            async def goal_runner(state):
+                # Goals typically set the Persona / System Prompt context
+                mission = config.get("missionStatement", "")
+                persona = config.get("personaTone", "professional")
+                context_update = f"System Persona: {persona}.\nMission: {mission}"
+                return {"context": [context_update]}
+            return goal_runner
+
+        elif node_type == "knowledge-base":
+            async def kb_runner(state):
+                # Simulating Retrieval
+                source = config.get("sourceType", "docs")
+                return {"context": [f"Retrieved context from {source}"]}
+            return kb_runner
+
+        elif node_type == "logic-router":
+            async def router_runner(state):
+                # In a real graph, this would return a conditional edge, but for now we log it
+                rule_type = config.get("routingType", "static")
+                print(f"[Router] Routing based on {rule_type}")
+                return {"intermediate_steps": {"router": "Routed"}}
+            return router_runner
+
+        elif node_type == "action-result":
+             async def result_runner(state):
+                 # Post-processing the output
+                 process_type = config.get("processingType", "raw")
+                 current_output = state.get("output", "")
+                 if process_type == "summarize":
+                     current_output = f"[Summarized] {current_output[:50]}..."
+                 elif process_type == "format":
+                     template = config.get("formatTemplate", "")
+                     current_output = f"Formatted: {template.replace('{{output}}', current_output)}"
+                 
+                 return {"output": current_output}
+             return result_runner
+
         else:
              async def generic_runner(state):
+                print(f"[Warn] No runner found for {node_type}, passing state.")
                 return {}
              return generic_runner
