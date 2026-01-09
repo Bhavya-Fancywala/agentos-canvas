@@ -6,33 +6,33 @@ import { Badge } from '@/components/ui/badge';
 
 export function InspectorOverview() {
   const { currentAgent, nodes, validationIssues } = useAgentStore();
-  
+
   // Get connected critical nodes
-  const goalNode = nodes.find(n => n.data.type === 'goal');
+  const goalNode = nodes.find(n => n.data.type === 'agent-goal');
   const brainNode = nodes.find(n => n.data.type === 'agent-brain');
   const guardrailsNode = nodes.find(n => n.data.type === 'guardrails');
   const ownerNode = nodes.find(n => n.data.type === 'accountability-owner');
-  
+
   const errorCount = validationIssues.filter(i => i.severity === 'error').length;
   const warningCount = validationIssues.filter(i => i.severity === 'warning').length;
-  
+
   // Generate agent summary
   const generateSummary = () => {
     const goals = goalNode ? (goalNode.data.config?.name as string || 'defined goals') : 'no goals defined';
     const policies = guardrailsNode ? 'established policies' : 'no policies defined';
     const owner = ownerNode ? (ownerNode.data.config?.name as string || 'assigned owner') : 'no owner assigned';
     const environment = currentAgent?.environment || 'draft';
-    
+
     return `This agent is designed to achieve ${goals}, operates under ${policies}, is accountable to ${owner}, and runs in ${environment} environment.`;
   };
-  
+
   const criticalNodes = [
-    { type: 'goal', label: 'Goal', icon: Target, node: goalNode },
+    { type: 'agent-goal', label: 'Goal', icon: Target, node: goalNode },
     { type: 'agent-brain', label: 'Agent Brain', icon: Brain, node: brainNode },
     { type: 'guardrails', label: 'Guardrails', icon: Shield, node: guardrailsNode },
     { type: 'accountability-owner', label: 'Accountability Owner', icon: UserCog, node: ownerNode },
   ];
-  
+
   return (
     <div className="space-y-6">
       {/* Agent Summary */}
@@ -42,12 +42,12 @@ export function InspectorOverview() {
           <p className="text-sm text-foreground leading-relaxed">{generateSummary()}</p>
         </div>
       </div>
-      
+
       {/* Environment Badge */}
       <div className="space-y-3">
         <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Environment</h3>
-        <Badge 
-          variant="outline" 
+        <Badge
+          variant="outline"
           className={cn(
             'text-sm px-3 py-1.5 font-medium',
             currentAgent?.environment === 'production' && 'border-destructive/50 text-destructive bg-destructive/10',
@@ -58,7 +58,7 @@ export function InspectorOverview() {
           {currentAgent?.environment?.toUpperCase() || 'DRAFT'}
         </Badge>
       </div>
-      
+
       {/* Validation Status */}
       <div className="space-y-3">
         <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Validation Status</h3>
@@ -97,13 +97,13 @@ export function InspectorOverview() {
           )}
         </div>
       </div>
-      
+
       {/* Critical Nodes */}
       <div className="space-y-3">
         <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Critical Declarations</h3>
         <div className="space-y-2">
           {criticalNodes.map(({ type, label, icon: Icon, node }) => (
-            <div 
+            <div
               key={type}
               className={cn(
                 'flex items-center gap-3 p-3 rounded-lg border',

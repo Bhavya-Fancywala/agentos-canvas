@@ -27,6 +27,9 @@ import { Environment } from '@/types/agent';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/hooks/use-theme';
 
+import { useState } from 'react';
+import { toast } from 'sonner';
+
 export function CanvasHeader() {
   const navigate = useNavigate();
   const {
@@ -38,12 +41,34 @@ export function CanvasHeader() {
     togglePalette,
     toggleInspector,
     toggleSimulation,
-    validationIssues
+    validationIssues,
+    executeAgent
   } = useAgentStore();
+
+  const [isRunning, setIsRunning] = useState(false);
 
   const errors = validationIssues.filter(i => i.severity === 'error');
   const isValid = errors.length === 0;
   const { theme, setTheme } = useTheme();
+
+  const handleRun = async () => {
+    if (!isValid) {
+      toast.error("Agent has validation errors. Fix them before running.");
+      return;
+    }
+    setIsRunning(true);
+    try {
+      const result = await executeAgent("Test Input from Canvas");
+      toast.success("Execution Successful!", {
+        description: `Output: ${result.output}`
+      });
+      console.log("Execution Result:", result);
+    } catch (e: any) {
+      toast.error("Execution Failed", { description: e.message });
+    } finally {
+      setIsRunning(false);
+    }
+  };
 
   return (
     <header className="absolute top-0 left-0 right-0 h-16 z-20 glass border-b border-border/50">
@@ -153,6 +178,19 @@ export function CanvasHeader() {
           <div className="h-6 w-px bg-border" />
 
           <Button
+            variant="default"
+            size="sm"
+            className={cn("h-9 bg-green-600 hover:bg-green-700 text-white border-green-700")}
+            onClick={handleRun}
+            disabled={isRunning || !isValid}
+          >
+            <Play className="h-4 w-4 mr-2" />
+            {isRunning ? 'Running...' : 'Run Agent'}
+          </Button>
+
+          <div className="h-6 w-px bg-border" />
+
+          <Button
             variant="ghost"
             size="icon"
             className="h-9 w-9 text-muted-foreground hover:text-foreground"
@@ -163,28 +201,26 @@ export function CanvasHeader() {
             <span className="sr-only">Toggle theme</span>
           </Button>
 
-
-
           <div className="h-6 w-px bg-border" />
 
           <Button
-            variant={isSimulationMode ? 'default' : 'outline'}
+            variant={isSimulationMode ? 'secondary' : 'outline'}
             size="sm"
             className={cn(
               'h-9',
-              isSimulationMode && 'bg-primary text-primary-foreground'
+              isSimulationMode && 'bg-primary/20 text-primary'
             )}
             onClick={toggleSimulation}
           >
             {isSimulationMode ? (
               <>
                 <Pause className="h-4 w-4 mr-2" />
-                Stop Simulation
+                Step Mode
               </>
             ) : (
               <>
                 <Play className="h-4 w-4 mr-2" />
-                Simulate
+                Debug
               </>
             )}
           </Button>

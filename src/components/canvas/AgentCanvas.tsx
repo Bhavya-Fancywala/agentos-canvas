@@ -29,7 +29,8 @@ import { LogicRouterNode } from '../agentos/nodes/processing/LogicRouterNode';
 // Bulk import for brevity
 import {
   KnowledgeBaseNode, MemoryStoreNode, ToolDefinitionNode, ApiActionNode,
-  OutputChannelNode, ActionResultNode, GuardrailsNode, HumanControlNode, OpsPolicyNode
+  OutputChannelNode, ActionResultNode, GuardrailsNode, HumanControlNode, OpsPolicyNode,
+  EmailReceiverNode, CrmToolNode, DocGeneratorNode
 } from '../agentos/nodes/RemainingNodes';
 
 
@@ -64,6 +65,11 @@ const nodeTypes: NodeTypes = {
 
   // Infra
   'ops-policy': OpsPolicyNode,
+
+  // SMB Nodes
+  'email-receiver': EmailReceiverNode,
+  'crm-tool': CrmToolNode,
+  'doc-generator': DocGeneratorNode,
 };
 
 const edgeTypes = {

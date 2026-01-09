@@ -47,7 +47,11 @@ interface AgentState {
   toggleSimulation: () => void;
 
   // Validation
+  // Validation
   validateAgent: () => void;
+
+  // Execution
+  executeAgent: (input: string) => Promise<any>;
 }
 
 const generateId = () => `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -168,115 +172,74 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   toggleSimulation: () => set((state) => ({ isSimulationMode: !state.isSimulationMode })),
 
   validateAgent: () => {
+    // ... existing validation logic ...
     const { nodes, edges, currentAgent } = get();
     const issues: ValidationIssue[] = [];
-
-    // Check for required nodes
     const nodeTypes = nodes.map(n => n.data.type);
-
-    if (!nodeTypes.includes('agent-goal')) {
-      issues.push({
-        id: 'missing-goal',
-        severity: 'error',
-        message: 'Agent must have a Goal & Persona node',
-        category: 'Core Logic',
-      });
-    }
-
-    if (!nodeTypes.includes('agent-brain')) {
-      issues.push({
-        id: 'missing-brain',
-        severity: 'error',
-        message: 'Agent must have an Agent Brain configuration',
-        category: 'Core Logic',
-      });
-    }
-
-    if (!nodeTypes.includes('guardrails')) {
-      issues.push({
-        id: 'missing-guardrails',
-        severity: 'error',
-        message: 'Agent must have Guardrails configured',
-        category: 'Governance',
-      });
-    }
-
-    // Production-specific validations
+    if (!nodeTypes.includes('agent-goal')) { issues.push({ id: 'missing-goal', severity: 'error', message: 'Agent must have a Goal & Persona node', category: 'Core Logic', }); }
+    if (!nodeTypes.includes('agent-brain')) { issues.push({ id: 'missing-brain', severity: 'error', message: 'Agent must have an Agent Brain configuration', category: 'Core Logic', }); }
+    if (!nodeTypes.includes('guardrails')) { issues.push({ id: 'missing-guardrails', severity: 'error', message: 'Agent must have Guardrails configured', category: 'Governance', }); }
     if (currentAgent?.environment === 'production') {
-      if (!nodeTypes.includes('ops-policy')) {
-        issues.push({
-          id: 'prod-ops',
-          severity: 'error',
-          message: 'Production agents require an Ops Policy (SLA/Cost)',
-          category: 'Operations',
-        });
-      }
-
-      if (!nodeTypes.includes('human-control')) {
-        issues.push({
-          id: 'prod-human',
-          severity: 'warning',
-          message: 'Production agents should have Human Control oversight',
-          category: 'Governance',
-        });
-      }
+      if (!nodeTypes.includes('ops-policy')) { issues.push({ id: 'prod-ops', severity: 'error', message: 'Production agents require an Ops Policy (SLA/Cost)', category: 'Operations', }); }
+      if (!nodeTypes.includes('human-control')) { issues.push({ id: 'prod-human', severity: 'warning', message: 'Production agents should have Human Control oversight', category: 'Governance', }); }
     }
-
-    // Check for inputs/outputs (Good practice)
     const hasEntry = nodeTypes.some(t => t === 'trigger' || t === 'input-channel');
-    if (!hasEntry && nodes.length > 0) {
-      issues.push({
-        id: 'missing-entry',
-        severity: 'warning',
-        message: 'Agent has no Entry Point (Trigger or Input Channel)',
-        category: 'Flow',
-      });
-    }
-
-    // Check for isolated nodes
+    if (!hasEntry && nodes.length > 0) { issues.push({ id: 'missing-entry', severity: 'warning', message: 'Agent has no Entry Point (Trigger or Input Channel)', category: 'Flow', }); }
     nodes.forEach(node => {
       const hasConnection = edges.some(e => e.source === node.id || e.target === node.id);
-      if (!hasConnection && nodes.length > 1) {
-        issues.push({
-          id: `isolated-${node.id}`,
-          nodeId: node.id,
-          severity: 'warning',
-          message: `${node.data.label} is not connected to the agent graph`,
-          category: 'Structure',
-        });
-      }
+      if (!hasConnection && nodes.length > 1) { issues.push({ id: `isolated-${node.id}`, nodeId: node.id, severity: 'warning', message: `${node.data.label} is not connected to the agent graph`, category: 'Structure', }); }
     });
-
-    // Check high-risk nodes have guardrails connection
     const guardrailNode = nodes.find(n => n.data.type === 'guardrails');
     if (guardrailNode) {
       const brainNodes = nodes.filter(n => n.data.type === 'agent-brain');
-
       brainNodes.forEach(node => {
-        const isConnectedToGuardrails = edges.some(e =>
-          (e.source === node.id && e.target === guardrailNode.id) ||
-          (e.target === node.id && e.source === guardrailNode.id)
-        );
-
-        if (!isConnectedToGuardrails) {
-          issues.push({
-            id: `guardrail-${node.id}`,
-            nodeId: node.id,
-            severity: 'error',
-            message: `Agent Brain must be connected to Guardrails`,
-            category: 'Safety',
-          });
-        }
+        const isConnectedToGuardrails = edges.some(e => (e.source === node.id && e.target === guardrailNode.id) || (e.target === node.id && e.source === guardrailNode.id));
+        if (!isConnectedToGuardrails) { issues.push({ id: `guardrail-${node.id}`, nodeId: node.id, severity: 'error', message: `Agent Brain must be connected to Guardrails`, category: 'Safety', }); }
       });
     }
-
     const isValid = issues.filter(i => i.severity === 'error').length === 0;
-
     set({
       validationIssues: issues,
-      currentAgent: get().currentAgent
-        ? { ...get().currentAgent!, isValid, validationIssues: issues }
-        : null
+      currentAgent: get().currentAgent ? { ...get().currentAgent!, isValid, validationIssues: issues } : null
     });
   },
+
+  executeAgent: async (input: string) => {
+    const { currentAgent, nodes, edges } = get();
+    if (!currentAgent) throw new Error("No active agent");
+
+    const payload = {
+      agent_id: currentAgent.id,
+      nodes: nodes.map(n => ({
+        id: n.id,
+        type: n.data.type,
+        label: n.data.label,
+        config: n.data.config
+      })),
+      edges: edges.map(e => ({
+        id: e.id,
+        source: e.source,
+        target: e.target
+      })),
+      input_data: { input }
+    };
+
+    try {
+      const response = await fetch('http://localhost:8000/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Execution failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Execution error:", error);
+      throw error;
+    }
+  }
 }));

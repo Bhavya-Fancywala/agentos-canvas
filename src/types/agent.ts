@@ -184,6 +184,31 @@ export const NODE_TYPES: NodeTypeDefinition[] = [
     icon: 'Settings',
     riskLevel: 'medium'
   },
+  // SMB Specific Nodes
+  {
+    type: 'email-receiver',
+    label: 'Email Inbox',
+    description: 'Listen for new emails (Gmail/Outlook) to trigger workflows',
+    category: 'entry',
+    icon: 'Mail',
+    riskLevel: 'low'
+  },
+  {
+    type: 'crm-tool',
+    label: 'CRM Manager',
+    description: 'Manage customers in HubSpot, Salesforce, or Pipedrive',
+    category: 'execution',
+    icon: 'Users',
+    riskLevel: 'medium'
+  },
+  {
+    type: 'doc-generator',
+    label: 'Doc Generator',
+    description: 'Create Invoices, Contracts, and Reports (PDF/Docs)',
+    category: 'execution',
+    icon: 'FileText',
+    riskLevel: 'low'
+  },
 ];
 
 export const getNodesByCategory = (category: NodeCategory): NodeTypeDefinition[] => {
