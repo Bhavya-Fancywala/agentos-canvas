@@ -18,7 +18,7 @@ async def main():
         MockNode("node-chat", "chat-trigger", {}),
         MockNode("node-brain", "agent-brain", {
             "llmModel": "llama-3.3-70b-versatile",
-            "apiKey": "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" 
+            "apiKey": "" 
         })
     ]
     edges = [
