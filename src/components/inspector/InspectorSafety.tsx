@@ -10,37 +10,25 @@ interface ComplianceItem {
 
 export function InspectorSafety() {
   const { nodes, currentAgent } = useAgentStore();
-  
+
   const guardrailsNode = nodes.find(n => n.data.type === 'guardrails');
-  const legalNode = nodes.find(n => n.data.type === 'legal-compliance');
-  const dataSensitivityNode = nodes.find(n => n.data.type === 'data-sensitivity');
-  
+
   // Compliance coverage items
   const complianceItems: ComplianceItem[] = [
-    { 
-      label: 'Guardrails & Policy', 
+    {
+      label: 'Guardrails & Policy',
       status: guardrailsNode ? 'covered' : 'missing',
       nodeType: 'guardrails'
     },
-    { 
-      label: 'Legal & Regulatory', 
-      status: legalNode ? 'covered' : (currentAgent?.environment === 'production' ? 'missing' : 'partial'),
-      nodeType: 'legal-compliance'
-    },
-    { 
-      label: 'Data Sensitivity', 
-      status: dataSensitivityNode ? 'covered' : 'partial',
-      nodeType: 'data-sensitivity'
-    },
   ];
-  
+
   // Forbidden actions (from guardrails config or default)
   const forbiddenActions = guardrailsNode?.data.config?.forbiddenActions as string[] || [
     'Unauthorized data access',
     'Actions outside defined scope',
     'Unsanctioned external communications',
   ];
-  
+
   const getStatusColor = (status: 'covered' | 'partial' | 'missing') => {
     switch (status) {
       case 'covered': return 'text-success';
@@ -48,7 +36,7 @@ export function InspectorSafety() {
       case 'missing': return 'text-destructive';
     }
   };
-  
+
   const getStatusBg = (status: 'covered' | 'partial' | 'missing') => {
     switch (status) {
       case 'covered': return 'bg-success/10 border-success/30';
@@ -56,7 +44,7 @@ export function InspectorSafety() {
       case 'missing': return 'bg-destructive/10 border-destructive/30';
     }
   };
-  
+
   const getStatusIcon = (status: 'covered' | 'partial' | 'missing') => {
     switch (status) {
       case 'covered': return <CheckCircle2 className="h-4 w-4 text-success" />;
@@ -64,40 +52,37 @@ export function InspectorSafety() {
       case 'missing': return <XCircle className="h-4 w-4 text-destructive" />;
     }
   };
-  
+
   return (
     <div className="space-y-6">
       {/* Safety Statement */}
       <div className="p-4 rounded-lg bg-node-safety/10 border border-node-safety/30">
         <p className="text-sm text-foreground leading-relaxed">
-          Safety is enforced through declarative constraints. This agent operates only within explicitly 
-          permitted boundaries defined by connected guardrails and compliance nodes.
+          Safety is enforced through the <strong>Guardrails</strong> node. It handles privacy, content filtering, and legal compliance policies.
         </p>
       </div>
-      
+
       {/* Compliance Dashboard */}
       <div className="space-y-3">
-        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Compliance Coverage</h3>
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Safety Coverage</h3>
         <div className="space-y-2">
           {complianceItems.map(item => (
-            <div 
+            <div
               key={item.nodeType}
               className={cn('p-3 rounded-lg border flex items-center gap-3', getStatusBg(item.status))}
             >
-              {item.nodeType === 'guardrails' && <Shield className={cn('h-4 w-4', getStatusColor(item.status))} />}
-              {item.nodeType === 'legal-compliance' && <Scale className={cn('h-4 w-4', getStatusColor(item.status))} />}
-              {item.nodeType === 'data-sensitivity' && <Lock className={cn('h-4 w-4', getStatusColor(item.status))} />}
+              <Shield className={cn('h-4 w-4', getStatusColor(item.status))} />
               <span className="text-sm flex-1">{item.label}</span>
               {getStatusIcon(item.status)}
             </div>
           ))}
         </div>
       </div>
-      
+
       {/* Guardrails Details */}
       {guardrailsNode && (
         <div className="space-y-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active Guardrails</h3>
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active Policies</h3>
           <div className="p-4 rounded-lg bg-secondary/20 border border-border/50 space-y-3">
             <div className="flex items-start gap-3">
               <Shield className="h-4 w-4 text-node-safety mt-0.5 shrink-0" />
@@ -115,7 +100,7 @@ export function InspectorSafety() {
           </div>
         </div>
       )}
-      
+
       {/* Forbidden Actions */}
       <div className="space-y-3">
         <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Forbidden Actions</h3>
@@ -128,28 +113,6 @@ export function InspectorSafety() {
           ))}
         </div>
       </div>
-      
-      {/* Compliance Gaps */}
-      {complianceItems.some(i => i.status === 'missing') && (
-        <div className="space-y-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Compliance Gaps</h3>
-          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/30">
-            <div className="space-y-2">
-              {complianceItems.filter(i => i.status === 'missing').map(item => (
-                <div key={item.nodeType} className="flex items-center gap-2">
-                  <XCircle className="h-4 w-4 text-destructive shrink-0" />
-                  <span className="text-sm text-destructive">{item.label} not configured</span>
-                </div>
-              ))}
-              {currentAgent?.environment === 'production' && (
-                <p className="text-xs text-destructive/80 mt-2 pt-2 border-t border-destructive/20">
-                  These gaps must be resolved for production deployment
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

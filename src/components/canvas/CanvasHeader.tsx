@@ -1,16 +1,18 @@
 import { useAgentStore } from '@/store/agentStore';
 import { cn } from '@/lib/utils';
-import { 
-  ArrowLeft, 
-  Settings, 
-  Play, 
+import {
+  ArrowLeft,
+  Settings,
+  Play,
   Pause,
   PanelLeft,
   PanelRight,
   Box,
   CheckCircle2,
   XCircle,
-  Circle
+  Circle,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,11 +25,12 @@ import {
 } from '@/components/ui/select';
 import { Environment } from '@/types/agent';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/hooks/use-theme';
 
 export function CanvasHeader() {
   const navigate = useNavigate();
-  const { 
-    currentAgent, 
+  const {
+    currentAgent,
     updateAgentEnvironment,
     isPaletteOpen,
     isInspectorOpen,
@@ -37,9 +40,10 @@ export function CanvasHeader() {
     toggleSimulation,
     validationIssues
   } = useAgentStore();
-  
+
   const errors = validationIssues.filter(i => i.severity === 'error');
   const isValid = errors.length === 0;
+  const { theme, setTheme } = useTheme();
 
   return (
     <header className="absolute top-0 left-0 right-0 h-16 z-20 glass border-b border-border/50">
@@ -54,9 +58,9 @@ export function CanvasHeader() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          
+
           <div className="h-6 w-px bg-border" />
-          
+
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Box className="h-4 w-4 text-primary" />
@@ -71,7 +75,7 @@ export function CanvasHeader() {
             </div>
           </div>
         </div>
-        
+
         {/* Center section - Environment selector */}
         <div className="flex items-center gap-3">
           <Select
@@ -106,9 +110,9 @@ export function CanvasHeader() {
               </SelectItem>
             </SelectContent>
           </Select>
-          
+
           <div className="h-6 w-px bg-border" />
-          
+
           <div className="flex items-center gap-2">
             {isValid ? (
               <Badge variant="outline" className="bg-success/10 text-success border-success/30">
@@ -123,7 +127,7 @@ export function CanvasHeader() {
             )}
           </div>
         </div>
-        
+
         {/* Right section */}
         <div className="flex items-center gap-2">
           <Button
@@ -135,7 +139,7 @@ export function CanvasHeader() {
             <PanelLeft className="h-4 w-4 mr-2" />
             Palette
           </Button>
-          
+
           <Button
             variant={isInspectorOpen ? 'secondary' : 'ghost'}
             size="sm"
@@ -145,9 +149,24 @@ export function CanvasHeader() {
             <PanelRight className="h-4 w-4 mr-2" />
             Inspector
           </Button>
-          
+
           <div className="h-6 w-px bg-border" />
-          
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-muted-foreground hover:text-foreground"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+
+
+
+          <div className="h-6 w-px bg-border" />
+
           <Button
             variant={isSimulationMode ? 'default' : 'outline'}
             size="sm"
@@ -169,7 +188,7 @@ export function CanvasHeader() {
               </>
             )}
           </Button>
-          
+
           <Button
             variant="ghost"
             size="icon"

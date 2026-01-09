@@ -14,24 +14,24 @@ interface AgentNodeData {
 interface AgentState {
   // Current agent
   currentAgent: Agent | null;
-  
+
   // Canvas state
   nodes: Node<AgentNodeData>[];
   edges: Edge[];
   selectedNodeId: string | null;
-  
+
   // UI state
   isPaletteOpen: boolean;
   isInspectorOpen: boolean;
   isSimulationMode: boolean;
-  
+
   // Validation
   validationIssues: ValidationIssue[];
-  
+
   // Actions
   createAgent: (name: string, description: string, environment: Environment) => void;
   updateAgentEnvironment: (environment: Environment) => void;
-  
+
   // Canvas actions
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
@@ -40,12 +40,12 @@ interface AgentState {
   removeNode: (nodeId: string) => void;
   selectNode: (nodeId: string | null) => void;
   updateNodeConfig: (nodeId: string, config: Record<string, unknown>) => void;
-  
+
   // UI actions
   togglePalette: () => void;
   toggleInspector: () => void;
   toggleSimulation: () => void;
-  
+
   // Validation
   validateAgent: () => void;
 }
@@ -61,7 +61,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   isInspectorOpen: true,
   isSimulationMode: false,
   validationIssues: [],
-  
+
   createAgent: (name, description, environment) => {
     const agent: Agent = {
       id: generateId(),
@@ -76,52 +76,52 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     set({ currentAgent: agent, nodes: [], edges: [], validationIssues: [] });
     get().validateAgent();
   },
-  
+
   updateAgentEnvironment: (environment) => {
     set((state) => ({
-      currentAgent: state.currentAgent 
+      currentAgent: state.currentAgent
         ? { ...state.currentAgent, environment, updatedAt: new Date() }
         : null
     }));
     get().validateAgent();
   },
-  
+
   onNodesChange: (changes) => {
     set((state) => ({
       nodes: applyNodeChanges(changes, state.nodes) as Node<AgentNodeData>[],
     }));
     get().validateAgent();
   },
-  
+
   onEdgesChange: (changes) => {
     set((state) => ({
       edges: applyEdgeChanges(changes, state.edges),
     }));
     get().validateAgent();
   },
-  
+
   onConnect: (connection) => {
     set((state) => ({
       edges: addEdge(
-        { 
-          ...connection, 
+        {
+          ...connection,
           type: 'smoothstep',
           animated: true,
           style: { stroke: 'hsl(187, 85%, 53%)', strokeWidth: 2 }
-        }, 
+        },
         state.edges
       ),
     }));
     get().validateAgent();
   },
-  
+
   addNode: (type, position) => {
     const nodeType = NODE_TYPES.find(n => n.type === type);
     if (!nodeType) return;
-    
+
     const newNode: Node<AgentNodeData> = {
       id: generateId(),
-      type: 'agentNode',
+      type: nodeType.type, // Use the specific registered type (e.g., 'trigger', 'agent-goal')
       position,
       data: {
         type: nodeType.type,
@@ -131,14 +131,14 @@ export const useAgentStore = create<AgentState>((set, get) => ({
         config: {},
       },
     };
-    
+
     set((state) => ({
       nodes: [...state.nodes, newNode],
       selectedNodeId: newNode.id,
     }));
     get().validateAgent();
   },
-  
+
   removeNode: (nodeId) => {
     set((state) => ({
       nodes: state.nodes.filter(n => n.id !== nodeId),
@@ -147,11 +147,11 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     }));
     get().validateAgent();
   },
-  
+
   selectNode: (nodeId) => {
     set({ selectedNodeId: nodeId });
   },
-  
+
   updateNodeConfig: (nodeId, config) => {
     set((state) => ({
       nodes: state.nodes.map(node =>
@@ -162,84 +162,77 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     }));
     get().validateAgent();
   },
-  
+
   togglePalette: () => set((state) => ({ isPaletteOpen: !state.isPaletteOpen })),
   toggleInspector: () => set((state) => ({ isInspectorOpen: !state.isInspectorOpen })),
   toggleSimulation: () => set((state) => ({ isSimulationMode: !state.isSimulationMode })),
-  
+
   validateAgent: () => {
     const { nodes, edges, currentAgent } = get();
     const issues: ValidationIssue[] = [];
-    
+
     // Check for required nodes
     const nodeTypes = nodes.map(n => n.data.type);
-    
-    if (!nodeTypes.includes('goal')) {
+
+    if (!nodeTypes.includes('agent-goal')) {
       issues.push({
         id: 'missing-goal',
         severity: 'error',
-        message: 'Agent must have a Goal node',
-        category: 'Intent',
+        message: 'Agent must have a Goal & Persona node',
+        category: 'Core Logic',
       });
     }
-    
+
+    if (!nodeTypes.includes('agent-brain')) {
+      issues.push({
+        id: 'missing-brain',
+        severity: 'error',
+        message: 'Agent must have an Agent Brain configuration',
+        category: 'Core Logic',
+      });
+    }
+
     if (!nodeTypes.includes('guardrails')) {
       issues.push({
         id: 'missing-guardrails',
         severity: 'error',
-        message: 'Agent must have Guardrails & Policy node',
-        category: 'Safety',
+        message: 'Agent must have Guardrails configured',
+        category: 'Governance',
       });
     }
-    
-    if (!nodeTypes.includes('accountability-owner')) {
-      issues.push({
-        id: 'missing-owner',
-        severity: 'error',
-        message: 'Agent must have an Accountability Owner',
-        category: 'Human Control',
-      });
-    }
-    
+
     // Production-specific validations
     if (currentAgent?.environment === 'production') {
-      if (!nodeTypes.includes('legal-compliance')) {
+      if (!nodeTypes.includes('ops-policy')) {
         issues.push({
-          id: 'prod-legal',
+          id: 'prod-ops',
           severity: 'error',
-          message: 'Production agents require Legal & Compliance mapping',
-          category: 'Compliance',
+          message: 'Production agents require an Ops Policy (SLA/Cost)',
+          category: 'Operations',
         });
       }
-      
-      if (!nodeTypes.includes('sla-response')) {
+
+      if (!nodeTypes.includes('human-control')) {
         issues.push({
-          id: 'prod-sla',
-          severity: 'error',
-          message: 'Production agents require SLA & Response Time definition',
-          category: 'Reliability',
-        });
-      }
-      
-      if (!nodeTypes.includes('cost-control')) {
-        issues.push({
-          id: 'prod-cost',
+          id: 'prod-human',
           severity: 'warning',
-          message: 'Production agents should have Cost & Usage Controls',
-          category: 'Cost',
-        });
-      }
-      
-      if (!nodeTypes.includes('graceful-degradation')) {
-        issues.push({
-          id: 'prod-degradation',
-          severity: 'warning',
-          message: 'Production agents should define Graceful Degradation behavior',
-          category: 'Reliability',
+          message: 'Production agents should have Human Control oversight',
+          category: 'Governance',
         });
       }
     }
-    
+
+    // Check for inputs/outputs (Good practice)
+    const hasEntry = nodeTypes.some(t => t === 'trigger' || t === 'input-channel');
+    if (!hasEntry && nodes.length > 0) {
+      issues.push({
+        id: 'missing-entry',
+        severity: 'warning',
+        message: 'Agent has no Entry Point (Trigger or Input Channel)',
+        category: 'Flow',
+      });
+    }
+
     // Check for isolated nodes
     nodes.forEach(node => {
       const hasConnection = edges.some(e => e.source === node.id || e.target === node.id);
@@ -253,37 +246,35 @@ export const useAgentStore = create<AgentState>((set, get) => ({
         });
       }
     });
-    
+
     // Check high-risk nodes have guardrails connection
     const guardrailNode = nodes.find(n => n.data.type === 'guardrails');
     if (guardrailNode) {
-      const highRiskNodes = nodes.filter(n => 
-        n.data.riskLevel === 'high' || n.data.riskLevel === 'critical'
-      );
-      
-      highRiskNodes.forEach(node => {
-        const isConnectedToGuardrails = edges.some(e => 
+      const brainNodes = nodes.filter(n => n.data.type === 'agent-brain');
+
+      brainNodes.forEach(node => {
+        const isConnectedToGuardrails = edges.some(e =>
           (e.source === node.id && e.target === guardrailNode.id) ||
           (e.target === node.id && e.source === guardrailNode.id)
         );
-        
+
         if (!isConnectedToGuardrails) {
           issues.push({
             id: `guardrail-${node.id}`,
             nodeId: node.id,
             severity: 'error',
-            message: `${node.data.label} must be connected to Guardrails`,
+            message: `Agent Brain must be connected to Guardrails`,
             category: 'Safety',
           });
         }
       });
     }
-    
+
     const isValid = issues.filter(i => i.severity === 'error').length === 0;
-    
-    set({ 
+
+    set({
       validationIssues: issues,
-      currentAgent: get().currentAgent 
+      currentAgent: get().currentAgent
         ? { ...get().currentAgent!, isValid, validationIssues: issues }
         : null
     });

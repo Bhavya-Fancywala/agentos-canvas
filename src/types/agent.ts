@@ -23,19 +23,17 @@ export interface Agent {
   validationIssues: ValidationIssue[];
 }
 
-export type NodeCategory = 
-  | 'intent'
-  | 'intelligence'
-  | 'memory'
-  | 'capability'
-  | 'safety'
-  | 'human'
-  | 'time'
-  | 'cost'
-  | 'observability'
-  | 'environment'
-  | 'testing';
+// Consolidated Node Categories
+export type NodeCategory =
+  | 'entry'
+  | 'processing'
+  | 'data'
+  | 'execution'
+  | 'exit'
+  | 'governance'
+  | 'infrastructure';
 
+// Node Type Definition
 export interface NodeTypeDefinition {
   type: string;
   label: string;
@@ -46,64 +44,146 @@ export interface NodeTypeDefinition {
   riskLevel?: 'low' | 'medium' | 'high' | 'critical';
 }
 
+// Category Configuration
 export const NODE_CATEGORIES: Record<NodeCategory, { label: string; color: string }> = {
-  intent: { label: 'Intent & Control', color: 'node-intent' },
-  intelligence: { label: 'Intelligence & Reasoning', color: 'node-intelligence' },
-  memory: { label: 'Memory & Knowledge', color: 'node-memory' },
-  capability: { label: 'Capabilities', color: 'node-capability' },
-  safety: { label: 'Safety & Compliance', color: 'node-safety' },
-  human: { label: 'Human Control', color: 'node-human' },
-  time: { label: 'Time & Reliability', color: 'node-time' },
-  cost: { label: 'Cost & Business', color: 'node-cost' },
-  observability: { label: 'Observability', color: 'node-observability' },
-  environment: { label: 'Environment', color: 'node-environment' },
-  testing: { label: 'Testing', color: 'node-testing' },
+  entry: { label: 'Inputs & Triggers', color: 'node-intent' },
+  processing: { label: 'Core Logic', color: 'node-intelligence' },
+  data: { label: 'Knowledge & Memory', color: 'node-memory' },
+  execution: { label: 'Actions & Tools', color: 'node-capability' },
+  exit: { label: 'Outputs & Channels', color: 'node-environment' },
+  governance: { label: 'Safety & Governance', color: 'node-safety' },
+  infrastructure: { label: 'Operations', color: 'node-cost' },
 };
 
+// Consolidated Node Types
 export const NODE_TYPES: NodeTypeDefinition[] = [
-  // Intent & Control
-  { type: 'goal', label: 'Goal', description: 'Declares the primary objective of the agent', category: 'intent', icon: 'Target', requiredConnections: ['outcome'], riskLevel: 'low' },
-  { type: 'outcome', label: 'Outcome', description: 'Defines expected successful outcomes', category: 'intent', icon: 'CheckCircle2', riskLevel: 'low' },
-  
-  // Intelligence & Reasoning
-  { type: 'agent-brain', label: 'Agent Brain', description: 'Core reasoning engine configuration', category: 'intelligence', icon: 'Brain', requiredConnections: ['guardrails'], riskLevel: 'high' },
-  { type: 'multi-agent-link', label: 'Multi-Agent Link', description: 'Declares collaboration with other agents', category: 'intelligence', icon: 'Network', riskLevel: 'medium' },
-  
-  // Memory & Knowledge
-  { type: 'memory', label: 'Memory', description: 'Declares memory scope and retention policies', category: 'memory', icon: 'Database', riskLevel: 'medium' },
-  { type: 'knowledge-source', label: 'Knowledge Source', description: 'External knowledge bases and data sources', category: 'memory', icon: 'BookOpen', riskLevel: 'medium' },
-  
-  // Capabilities
-  { type: 'tool-registry', label: 'Tool Registry', description: 'Declares available tools and their permissions', category: 'capability', icon: 'Wrench', requiredConnections: ['guardrails'], riskLevel: 'high' },
-  
-  // Safety & Compliance
-  { type: 'guardrails', label: 'Guardrails & Policy', description: 'Safety constraints and operational policies', category: 'safety', icon: 'Shield', riskLevel: 'critical' },
-  { type: 'legal-compliance', label: 'Legal & Compliance', description: 'Regulatory and legal framework mappings', category: 'safety', icon: 'Scale', riskLevel: 'critical' },
-  { type: 'data-sensitivity', label: 'Data Sensitivity & Masking', description: 'PII handling and data classification rules', category: 'safety', icon: 'Lock', riskLevel: 'critical' },
-  
-  // Human Control
-  { type: 'approval', label: 'Approval', description: 'Declares actions requiring human approval', category: 'human', icon: 'UserCheck', requiredConnections: ['accountability-owner'], riskLevel: 'low' },
-  { type: 'human-handoff', label: 'Human Handoff', description: 'Conditions for escalation to human operators', category: 'human', icon: 'Users', riskLevel: 'low' },
-  { type: 'accountability-owner', label: 'Accountability Owner', description: 'Assigns ownership and responsibility', category: 'human', icon: 'UserCog', riskLevel: 'low' },
-  
-  // Time & Reliability
-  { type: 'schedule-trigger', label: 'Schedule & Trigger', description: 'Temporal activation conditions', category: 'time', icon: 'Clock', riskLevel: 'low' },
-  { type: 'sla-response', label: 'SLA & Response Time', description: 'Service level commitments', category: 'time', icon: 'Timer', riskLevel: 'medium' },
-  { type: 'graceful-degradation', label: 'Graceful Degradation', description: 'Fallback behaviors and failure modes', category: 'time', icon: 'AlertTriangle', riskLevel: 'medium' },
-  
-  // Cost & Business
-  { type: 'cost-control', label: 'Cost & Usage Control', description: 'Budget limits and usage quotas', category: 'cost', icon: 'DollarSign', riskLevel: 'medium' },
-  { type: 'business-kpi', label: 'Business KPI Binding', description: 'Links agent to business metrics', category: 'cost', icon: 'TrendingUp', riskLevel: 'low' },
-  
-  // Observability
-  { type: 'analytics-feedback', label: 'Analytics & Feedback', description: 'Telemetry and feedback collection', category: 'observability', icon: 'BarChart3', riskLevel: 'low' },
-  { type: 'exception-dispute', label: 'Exception & Dispute Resolution', description: 'Error handling and dispute workflows', category: 'observability', icon: 'AlertOctagon', riskLevel: 'medium' },
-  
-  // Environment
-  { type: 'environment', label: 'Environment', description: 'Runtime environment configuration', category: 'environment', icon: 'Server', riskLevel: 'low' },
-  
-  // Testing
-  { type: 'sandbox-simulation', label: 'Sandbox / Simulation', description: 'Testing and simulation configuration', category: 'testing', icon: 'FlaskConical', riskLevel: 'low' },
+  // 1. Inputs & Triggers
+  {
+    type: 'trigger',
+    label: 'Trigger',
+    description: 'Schedule (Cron), Webhook, or Event that starts the agent',
+    category: 'entry',
+    icon: 'Zap',
+    riskLevel: 'low'
+  },
+  {
+    type: 'input-channel',
+    label: 'Input Channel',
+    description: 'Ingress points: Voice, WhatsApp, Email, Chat',
+    category: 'entry',
+    icon: 'MessageSquare',
+    riskLevel: 'low'
+  },
+
+  // 2. Core Logic
+  {
+    type: 'agent-goal',
+    label: 'Goal & Persona',
+    description: 'Defines identity, core directive, and success outcomes',
+    category: 'processing',
+    icon: 'Target',
+    requiredConnections: [],
+    riskLevel: 'low'
+  },
+  {
+    type: 'agent-brain',
+    label: 'Agent Brain',
+    description: 'LLM configuration, reasoning model, and prompt strategy',
+    category: 'processing',
+    icon: 'Brain',
+    requiredConnections: ['guardrails'],
+    riskLevel: 'high'
+  },
+  {
+    type: 'logic-router',
+    label: 'Logic Router',
+    description: 'Conditional branching, classification, and flow control',
+    category: 'processing',
+    icon: 'GitFork',
+    riskLevel: 'medium'
+  },
+
+  // 3. Knowledge & Memory
+  {
+    type: 'knowledge-base',
+    label: 'Knowledge Base',
+    description: 'Static knowledge (PDFs, Docs) for RAG',
+    category: 'data',
+    icon: 'Book',
+    riskLevel: 'medium'
+  },
+  {
+    type: 'memory-config',
+    label: 'Memory Store',
+    description: 'Short-term session and long-term user history',
+    category: 'data',
+    icon: 'Database',
+    riskLevel: 'medium'
+  },
+
+  // 4. Actions & Tools
+  {
+    type: 'tool-definition',
+    label: 'Tool Definition',
+    description: 'Native functions and internal tool bindings',
+    category: 'execution',
+    icon: 'Wrench',
+    riskLevel: 'high'
+  },
+  {
+    type: 'api-action',
+    label: 'API Action',
+    description: 'External REST/GraphQL calls and integrations',
+    category: 'execution',
+    icon: 'Globe',
+    riskLevel: 'medium'
+  },
+
+  // 5. Outputs & Channels
+  {
+    type: 'output-channel',
+    label: 'Output Channel',
+    description: 'Response delivery: SMS, Voice, API response',
+    category: 'exit',
+    icon: 'Send',
+    riskLevel: 'low'
+  },
+  {
+    type: 'action-result',
+    label: 'Action Result',
+    description: 'Post-processing logic for tool outputs',
+    category: 'exit',
+    icon: 'CheckSquare',
+    riskLevel: 'low'
+  },
+
+  // 6. Safety & Governance
+  {
+    type: 'guardrails',
+    label: 'Guardrails',
+    description: 'Safety policies, PII masking, and legal compliance',
+    category: 'governance',
+    icon: 'Shield',
+    riskLevel: 'critical'
+  },
+  {
+    type: 'human-control',
+    label: 'Human Control',
+    description: 'Approval steps, human handoff, and oversight',
+    category: 'governance',
+    icon: 'UserCheck',
+    riskLevel: 'medium'
+  },
+
+  // 7. Operations
+  {
+    type: 'ops-policy',
+    label: 'Ops Policy',
+    description: 'SLA, Cost limits, Rate limiting, and Logging',
+    category: 'infrastructure',
+    icon: 'Settings',
+    riskLevel: 'medium'
+  },
 ];
 
 export const getNodesByCategory = (category: NodeCategory): NodeTypeDefinition[] => {

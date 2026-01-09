@@ -1,7 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAgentStore } from '@/store/agentStore';
 import { cn } from '@/lib/utils';
-import { X, FileText, Target, Brain, Shield, UserCog, Activity, History, Eye } from 'lucide-react';
+import {
+  X,
+  LayoutTemplate,
+  ShieldCheck,
+  PlayCircle
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,37 +19,26 @@ import { InspectorLiveState } from '@/components/inspector/InspectorLiveState';
 import { InspectorAuditLog } from '@/components/inspector/InspectorAuditLog';
 import { InspectorExplainability } from '@/components/inspector/InspectorExplainability';
 
-const INSPECTOR_TABS = [
-  { id: 'overview', label: 'Overview', icon: FileText },
-  { id: 'goals', label: 'Goals', icon: Target },
-  { id: 'reasoning', label: 'Reasoning', icon: Brain },
-  { id: 'safety', label: 'Safety', icon: Shield },
-  { id: 'accountability', label: 'Accountability', icon: UserCog },
-  { id: 'state', label: 'Live State', icon: Activity },
-  { id: 'audit', label: 'Audit Log', icon: History },
-  { id: 'explain', label: 'Explain', icon: Eye },
-] as const;
-
 export function NodeInspector() {
   const { isInspectorOpen, toggleInspector, currentAgent } = useAgentStore();
-  
+
   if (!isInspectorOpen) return null;
-  
+
   return (
     <motion.div
-      initial={{ x: 360, opacity: 0 }}
+      initial={{ x: 400, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 360, opacity: 0 }}
+      exit={{ x: 400, opacity: 0 }}
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-      className="absolute right-4 top-20 bottom-6 w-[340px] z-10"
+      className="absolute right-4 top-20 bottom-6 w-[400px] z-10"
     >
-      <div className="h-full glass-strong rounded-xl overflow-hidden flex flex-col">
+      <div className="h-full glass-strong rounded-xl overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="p-4 border-b border-border/50 flex items-center justify-between shrink-0">
+        <div className="p-4 border-b border-border/50 flex items-center justify-between shrink-0 bg-secondary/20">
           <div>
-            <h2 className="font-semibold text-sm text-foreground">Agent Contract</h2>
+            <h2 className="font-semibold text-sm text-foreground">Agent Inspector</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {currentAgent?.name || 'Governance & Reasoning Viewer'}
+              {currentAgent?.name || 'Properties & Governance'}
             </p>
           </div>
           <Button
@@ -56,111 +50,75 @@ export function NodeInspector() {
             <X className="h-4 w-4" />
           </Button>
         </div>
-        
-        {/* Tabs */}
-        <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
-          <div className="shrink-0 border-b border-border/50 overflow-x-auto">
-            <TabsList className="inline-flex h-auto p-1.5 bg-transparent w-max gap-0.5">
-              {INSPECTOR_TABS.map(tab => (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className={cn(
-                    'px-3 py-1.5 text-xs font-medium rounded-md',
-                    'data-[state=active]:bg-secondary data-[state=active]:text-foreground',
-                    'data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground',
-                    'transition-colors whitespace-nowrap'
-                  )}
-                >
-                  {tab.label}
-                </TabsTrigger>
-              ))}
+
+        {/* Categorized Tabs */}
+        <Tabs defaultValue="design" className="flex-1 flex flex-col min-h-0">
+          <div className="shrink-0 border-b border-border/50 px-2 pt-2 bg-secondary/10">
+            <TabsList className="flex w-full h-auto p-1 gap-1 bg-transparent">
+              <TabsTrigger
+                value="design"
+                className="flex-1 flex flex-col gap-1 py-2 text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+              >
+                <LayoutTemplate className="h-4 w-4 mb-0.5" />
+                Design
+              </TabsTrigger>
+              <TabsTrigger
+                value="governance"
+                className="flex-1 flex flex-col gap-1 py-2 text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+              >
+                <ShieldCheck className="h-4 w-4 mb-0.5" />
+                Governance
+              </TabsTrigger>
+              <TabsTrigger
+                value="runtime"
+                className="flex-1 flex flex-col gap-1 py-2 text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+              >
+                <PlayCircle className="h-4 w-4 mb-0.5" />
+                Runtime
+              </TabsTrigger>
             </TabsList>
           </div>
-          
-          <ScrollArea className="flex-1">
-            <div className="p-4">
-              <AnimatePresence mode="wait">
-                <TabsContent value="overview" className="mt-0 data-[state=inactive]:hidden">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
+
+          <ScrollArea className="flex-1 bg-background/50">
+            <div className="p-0">
+              <TabsContent value="design" className="m-0 focus-visible:ring-0">
+                <div className="divide-y divide-border/40">
+                  <Section title="Overview" defaultOpen>
                     <InspectorOverview />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="goals" className="mt-0 data-[state=inactive]:hidden">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
+                  </Section>
+                  <Section title="Goals & Directives">
                     <InspectorGoals />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="reasoning" className="mt-0 data-[state=inactive]:hidden">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
+                  </Section>
+                  <Section title="Reasoning Engine">
                     <InspectorReasoning />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="safety" className="mt-0 data-[state=inactive]:hidden">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
+                  </Section>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="governance" className="m-0 focus-visible:ring-0">
+                <div className="divide-y divide-border/40">
+                  <Section title="Safety Bounds" defaultOpen>
                     <InspectorSafety />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="accountability" className="mt-0 data-[state=inactive]:hidden">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
+                  </Section>
+                  <Section title="Accountability">
                     <InspectorAccountability />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="state" className="mt-0 data-[state=inactive]:hidden">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
-                    <InspectorLiveState />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="audit" className="mt-0 data-[state=inactive]:hidden">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
+                  </Section>
+                  <Section title="Audit Logs">
                     <InspectorAuditLog />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="explain" className="mt-0 data-[state=inactive]:hidden">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
+                  </Section>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="runtime" className="m-0 focus-visible:ring-0">
+                <div className="divide-y divide-border/40">
+                  <Section title="Live State" defaultOpen>
+                    <InspectorLiveState />
+                  </Section>
+                  <Section title="Explainability">
                     <InspectorExplainability />
-                  </motion.div>
-                </TabsContent>
-              </AnimatePresence>
+                  </Section>
+                </div>
+              </TabsContent>
             </div>
           </ScrollArea>
         </Tabs>
@@ -168,3 +126,42 @@ export function NodeInspector() {
     </motion.div>
   );
 }
+
+function Section({ children, title, defaultOpen = false }: { children: React.ReactNode, title: string, defaultOpen?: boolean }) {
+  const [isOpen, setIsOpen] = React.useState(defaultOpen);
+
+  // Use a require ref to avoid hydration mismatches if needed, but simple state is fine here
+  // Using React.useState directly
+
+  return (
+    <div className="group">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors text-left"
+      >
+        <span className="font-semibold text-sm text-foreground/90">{title}</span>
+        <span className={cn("text-muted-foreground transition-transform duration-200", isOpen ? "rotate-90" : "")}>
+          →
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-6 pt-0">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+import React from 'react';
+

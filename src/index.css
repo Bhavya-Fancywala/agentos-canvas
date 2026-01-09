@@ -8,6 +8,92 @@
 
 @layer base {
   :root {
+    /* Core surfaces - Light Mode foundation */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 10%;
+    
+    /* Card/Panel surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 10%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 10%;
+    
+    /* Primary - Stronger Cyan for light mode contrast */
+    --primary: 187 85% 40%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary - Light slate */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    /* Muted - Subtle backgrounds */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    /* Accent - Warm amber */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Destructive - Alert red */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* Success - Governance green */
+    --success: 142 71% 40%;
+    --success-foreground: 210 40% 98%;
+    
+    /* Warning - Amber */
+    --warning: 38 92% 45%;
+    --warning-foreground: 0 0% 100%;
+    
+    /* Info - Cyan */
+    --info: 187 85% 40%;
+    --info-foreground: 0 0% 100%;
+    
+    /* Borders */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 187 85% 40%;
+    
+    --radius: 0.5rem;
+    
+    /* Node category colors - Adjusted for light mode readability */
+    --node-intent: 262 83% 58%;
+    --node-intelligence: 187 85% 40%;
+    --node-memory: 38 92% 45%;
+    --node-capability: 142 71% 45%;
+    --node-safety: 0 72% 51%;
+    --node-human: 280 65% 50%;
+    --node-time: 200 70% 45%;
+    --node-cost: 25 95% 53%;
+    --node-observability: 170 75% 41%;
+    --node-environment: 217 19% 45%;
+    --node-testing: 290 60% 55%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(187 85% 45%) 0%, hsl(200 85% 40%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(187 85% 45% / 0.15) 0%, transparent 70%);
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px hsl(222 47% 10% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(222 47% 10% / 0.1), 0 2px 4px -1px hsl(222 47% 10% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(222 47% 10% / 0.1), 0 4px 6px -2px hsl(222 47% 10% / 0.05);
+    --shadow-glow: 0 0 20px hsl(187 85% 45% / 0.2);
+    
+    /* Sidebar */
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 222 47% 10%;
+    --sidebar-primary: 187 85% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 10%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 187 85% 40%;
+  }
+
+  .dark {
     /* Core surfaces - Deep slate foundation */
     --background: 222 47% 6%;
     --foreground: 210 40% 96%;
@@ -55,8 +141,6 @@
     --border: 217 19% 18%;
     --input: 217 19% 18%;
     --ring: 187 85% 53%;
-    
-    --radius: 0.5rem;
     
     /* Node category colors */
     --node-intent: 262 83% 58%;
